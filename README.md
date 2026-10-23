@@ -64,7 +64,7 @@ In PowerShell with a supported Visual Studio C++ toolchain:
 cmake -S . -B build -DBUILD_TESTING=ON
 cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
-.\build\Release\MathEngineRunner.exe
+.\build\Release\ArithvexCLI.exe
 ```
 
 ### Build on Linux
@@ -73,8 +73,10 @@ ctest --test-dir build -C Release --output-on-failure
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
 cmake --build build --parallel
 ctest --test-dir build --output-on-failure
-./build/MathEngineRunner
+./build/ArithvexCLI
 ```
+
+On Windows, use `scripts\\build-windows.cmd` and `scripts\\run-windows.cmd` to configure, build, test and launch from a Developer Command Prompt or compatible C++ environment.
 
 The **interactive runner** lets you work with equations, statistics, probability, geometry, calculus, series approximations, eigenvalues, π, and the golden ratio through its numbered menu.
 
@@ -82,7 +84,7 @@ For troubleshooting, Debug builds, and detailed build instructions, see **[Build
 
 ## Use the library
 
-The supported shared-library entry points are declared in [`MathEngineExports.h`](The%20extra%20har%20level%20maths%20PHD%20Level%2B%2B/MathEngineExports.h).
+The shared-library C ABI is declared in [`MathEngineExports.h`](src/Arithvex/MathEngineExports.h). The historical `MathEngine`-prefixed **C ABI function and structure names** remain unchanged for existing clients; new binaries and CMake targets use **Arithvex**.
 
 Example of calling the exported quadratic solver from C++:
 
@@ -107,41 +109,43 @@ int main() {
 }
 ```
 
-Link against the `MathEngine` shared-library target, and make sure the runtime library is available when launching an application. When calling other exported methods, handle their documented invalid-input/error outcomes (such as `NaN`, a zero root count, or a negative status).
+Link against the `Arithvex` shared-library target, and make sure the runtime library is available when launching an application. When calling other exported methods, handle their documented invalid-input/error outcomes (such as `NaN`, a zero root count, or a negative status).
 
 ### Build targets
 
 | CMake target | Role |
 | --- | --- |
-| `MathEngineCore` | Static library containing the C++ mathematical implementation |
-| `MathEngine` | Shared library exposing the `extern "C"` entry points |
-| `MathEngineRunner` | Interactive console application |
+| `ArithvexCore` | Static library containing the C++ mathematical implementation |
+| `Arithvex` | Shared library exposing the existing `extern "C"` entry points |
+| `ArithvexCLI` | Interactive console application |
 | `arithvex_tests` | C++ regression-test executable when `BUILD_TESTING=ON` |
 
 ## Project structure
 
 ```text
 Arithvex/
-├── .github/workflows/c-cpp.yml      # Windows / Ubuntu CI matrix
-├── CMakeLists.txt                  # Cross-platform build configuration
-├── MathEngineRunner/               # Legacy Visual Studio runner project
-├── The extra har level maths PHD Level++/
+├── Arithvex.slnx                 # Visual Studio solution
+├── CMakeLists.txt                # CMake targets for engine, DLL, CLI, tests
+├── apps/ArithvexCLI/            # Console source and Visual Studio project
+│   ├── ArithvexCLI.cpp
+│   └── ArithvexCLI.vcxproj
+├── src/Arithvex/                # Mathematical engine and public headers
+│   ├── Arithvex.h               # Modern umbrella include
+│   ├── Arithvex.vcxproj
 │   ├── AdvancedComputation.{h,cpp}
 │   ├── AlgebraStats.{h,cpp}
 │   ├── DiscreteMath.h
 │   ├── Geometry3D.{h,cpp}
 │   ├── MathCore.{h,cpp}
-│   ├── MathEngineExports.{h,cpp}
-│   ├── MathEngineRunner.cpp
+│   ├── MathEngineExports.{h,cpp}  # Compatible C ABI declarations
 │   └── SymbolicCalculus.{h,cpp}
-├── tests/math_engine_tests.cpp     # Regression tests
-├── docs/
-│   ├── BUILDING.md
-│   └── archive/README-original-2026-10-23.md
+├── scripts/                     # Portable Windows CMake command helpers
+├── tests/math_engine_tests.cpp
+├── docs/BUILDING.md
 └── LICENSE
 ```
 
-The historical directory names remain unchanged to avoid disruptive path changes to existing Visual Studio project files.
+The source, solution and project directories use the **Arithvex** name. The internal C++ namespace and existing `MathEngine` C ABI symbols remain unchanged for compatibility. CMake also provides `MathEngine`/`MathEngineCore` and `MathEngineRunner` aliases for CMake clients; use the new names when building targets and packaging binaries.
 
 ## Testing and development status
 
@@ -152,10 +156,11 @@ The initial regression tests cover:
 - Combinatorics and unsigned 64-bit edge cases
 - Probability input validation (including non-finite values)
 - Public ABI evaluation, invalid parameter counts, and basic statistics
+- FFT and inverse-FFT round trips, matrices, dominant eigenvalue, and Runge–Kutta approximation
 
 Passing these tests **does not guarantee** every mathematical function is validated. Areas requiring continued work include deeper FFT/inverse FFT, matrix, eigenvalue, geometry, calculus, boundary-condition, and numerical-precision testing.
 
-See the [open issues](https://github.com/sanskarIN/Arithvex/issues) for current tasks. Priority improvements include [expanding numerical tests](https://github.com/sanskarIN/Arithvex/issues/4), [removing previously tracked build artifacts](https://github.com/sanskarIN/Arithvex/issues/2), and [protecting the `main` branch](https://github.com/sanskarIN/Arithvex/issues/5).
+See the [open issues](https://github.com/sanskarIN/Arithvex/issues) for current tasks. Priorities include [expanding numerical tests](https://github.com/sanskarIN/Arithvex/issues/4) and [protecting the `main` branch](https://github.com/sanskarIN/Arithvex/issues/5). Historical build artifacts have been removed from the current tree without rewriting history.
 
 ## Contributing
 
