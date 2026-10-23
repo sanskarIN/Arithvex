@@ -61,10 +61,19 @@ jobs:
         if: matrix.build_type == 'Release'
         run: cpack --config build/CPackConfig.cmake -C Release -G ZIP --package-directory dist
 
+      - name: Generate release-candidate SHA-256 checksums
+        if: matrix.build_type == 'Release'
+        shell: bash
+        run: |
+          cd dist
+          cmake -E sha256sum ./*.zip > SHA256SUMS.txt
+
       - name: Upload release-candidate archive
         if: matrix.build_type == 'Release'
         uses: actions/upload-artifact@v4
         with:
           name: Arithvex-v1.0.0-rc.1-${{ runner.os }}
-          path: dist/*.zip
+          path: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
           if-no-files-found: error
