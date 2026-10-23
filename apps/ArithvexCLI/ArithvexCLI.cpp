@@ -11,7 +11,7 @@ namespace
 {
 void printMenu()
 {
-    std::cout << "\nMath Engine Runner\n";
+    std::cout << "\nArithvex — Mathematical Computing CLI\n";
     std::cout << "1. Solve quadratic equation\n";
     std::cout << "2. Solve cubic equation\n";
     std::cout << "3. Compute mean and median\n";
@@ -541,6 +541,10 @@ int main()
         int choice = -1;
         if (!(std::cin >> choice))
         {
+            if (std::cin.eof())
+            {
+                return 0;
+            }
             clearInput();
             std::cout << "Invalid menu choice.\n";
             continue;
