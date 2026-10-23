@@ -76,7 +76,7 @@ ctest --test-dir build --output-on-failure
 ./build/ArithvexCLI
 ```
 
-On Windows, use `scripts\\build-windows.cmd` and `scripts\\run-windows.cmd` to configure, build, test and launch from a Developer Command Prompt or compatible C++ environment.
+On Windows, use `scripts\build-windows.cmd` and `scripts\run-windows.cmd` to configure, build, test and launch from a Developer Command Prompt or compatible C++ environment.
 
 The **interactive runner** lets you work with equations, statistics, probability, geometry, calculus, series approximations, eigenvalues, π, and the golden ratio through its numbered menu.
 
