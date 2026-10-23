@@ -1,0 +1,19 @@
+name: Documentation links
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  docs-links:
+    name: Verify local Markdown links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check documentation paths
+        run: python3 scripts/check-doc-links.py
