@@ -54,5 +54,5 @@ GitHub Actions runs Debug and Release builds on both Ubuntu and Windows for pull
 ## Known cleanup tasks
 
 - Historical generated binaries and compiler intermediates have been removed from the active source tree. They remain available in old Git history; no history rewrite was performed.
-- The original oversized README is preserved in `docs/archive/README-original-2026-10-23.md`; the root README now serves as the maintained project overview.
+- Use the maintained root `README.md` and this build guide rather than historical project snapshots.
 - Verify all existing mathematical algorithms with expanded numerical reference tests before declaring a stable release.
