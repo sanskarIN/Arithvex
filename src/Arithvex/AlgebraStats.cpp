@@ -289,11 +289,20 @@ long double Probability::totalProbability(const std::vector<long double>& priors
     }
 
     long double total = 0.0L;
+    long double priorMass = 0.0L;
     for (std::size_t index = 0; index < priors.size(); ++index)
     {
         validateProbability(priors[index], "Prior");
         validateProbability(likelihoods[index], "Likelihood");
+        priorMass += priors[index];
         total += priors[index] * likelihoods[index];
+    }
+
+    // The law of total probability assumes mutually exclusive, exhaustive
+    // events. Their probabilities must sum to 1, within floating-point tolerance.
+    if (!std::isfinite(priorMass) || std::abs(priorMass - 1.0L) > 1.0e-9L)
+    {
+        throw std::out_of_range("Total probability requires priors that sum to one.");
     }
 
     return total;

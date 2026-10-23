@@ -35,7 +35,7 @@ jobs:
       - name: Run regression tests
         run: ctest --test-dir build -C ${{ matrix.build_type }} --output-on-failure
 
-      - name: Install release-candidate SDK
+      - name: Install stable-release SDK
         if: matrix.build_type == 'Release'
         run: cmake --install build --config Release --prefix install
 
@@ -69,7 +69,7 @@ jobs:
             LD_LIBRARY_PATH="$PWD/install/lib:${LD_LIBRARY_PATH:-}" ./consumer-build/arithvex_consumer
           fi
 
-      - name: Package release-candidate ZIP
+      - name: Package stable-release ZIP
         if: matrix.build_type == 'Release'
         shell: bash
         run: |
@@ -77,21 +77,21 @@ jobs:
           cpack --config build/CPackConfig.cmake -C Release -G ZIP
           mkdir -p dist
           shopt -s nullglob
-          packages=(Arithvex-1.0.0-rc.1-*.zip)
+          packages=(Arithvex-1.0.0-*.zip)
           if (( ${#packages[@]} == 0 )); then
-            echo "No Arithvex release-candidate ZIP was generated" >&2
+            echo "No Arithvex stable-release ZIP was generated" >&2
             exit 1
           fi
           mv -- "${packages[@]}" dist/
 
-      - name: Generate release-candidate SHA-256 checksums
+      - name: Generate stable-release SHA-256 checksums
         if: matrix.build_type == 'Release'
         shell: bash
         run: |
           cd dist
           cmake -E sha256sum ./*.zip > SHA256SUMS.txt
 
-      - name: Verify release-candidate contents and checksums
+      - name: Verify stable-release contents and checksums
         if: matrix.build_type == 'Release'
         shell: bash
         run: |
@@ -119,11 +119,11 @@ jobs:
             fi
           done
 
-      - name: Upload release-candidate archive
+      - name: Upload stable-release archive
         if: matrix.build_type == 'Release'
         uses: actions/upload-artifact@v4
         with:
-          name: Arithvex-v1.0.0-rc.1-${{ runner.os }}
+          name: Arithvex-v1.0.0-${{ runner.os }}
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt

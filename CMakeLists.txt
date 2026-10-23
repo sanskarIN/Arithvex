@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 
 project(Arithvex VERSION 1.0.0 LANGUAGES CXX)
 
-# Release-candidate stage only: v1.0.0 is NOT tagged or published as stable.
-set(ARITHVEX_PRERELEASE "rc.1")
+# The v1.0.0 stable artifacts are published only after the gated workflow passes.
+set(ARITHVEX_PRERELEASE "")
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(CTest)
@@ -109,12 +109,12 @@ install(FILES
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Arithvex"
 )
 
-# Archive names explicitly mark this as a release CANDIDATE.
+# Stable archive filenames contain the numeric version, OS and architecture.
 set(CPACK_PACKAGE_NAME "Arithvex")
 set(CPACK_PACKAGE_VENDOR "Arithvex Contributors")
-set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}-${ARITHVEX_PRERELEASE}")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_FILE_NAME
-    "Arithvex-${PROJECT_VERSION}-${ARITHVEX_PRERELEASE}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+    "Arithvex-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_GENERATOR "ZIP;TGZ")
 include(CPack)
