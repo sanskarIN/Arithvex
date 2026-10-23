@@ -144,6 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Arithvex.h" />
     <ClInclude Include="AdvancedComputation.h" />
     <ClInclude Include="AlgebraStats.h" />
     <ClInclude Include="DiscreteMath.h" />
