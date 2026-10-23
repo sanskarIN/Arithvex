@@ -1,7 +1,7 @@
 <Solution>
   <Configurations>
     <Platform Name="x64" />
-    <Platform Name="x86" />
+    <Platform Name="Win32" />
   </Configurations>
   <Project Path="src/Arithvex/Arithvex.vcxproj" Id="1f0a3c56-9d2f-4872-8e53-7e8199fc1e30" />
   <Project Path="apps/ArithvexCLI/ArithvexCLI.vcxproj" Id="4d1cf2f3-13f8-4f6d-b0aa-1f8c5765c1e4" />
