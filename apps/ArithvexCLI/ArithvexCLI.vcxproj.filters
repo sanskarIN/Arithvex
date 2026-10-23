@@ -11,12 +11,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\The extra har level maths PHD Level++\MathEngineRunner.cpp">
+    <ClCompile Include="ArithvexCLI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\The extra har level maths PHD Level++\MathEngineExports.h">
+    <ClInclude Include="..\..\src\Arithvex\MathEngineExports.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
