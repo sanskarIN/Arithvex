@@ -240,6 +240,56 @@ void testNumericalCalculus()
     require(missingVariable, "partial derivative must reject absent target variable");
 }
 
+void testReleaseBoundaryGuards()
+{
+    const auto maximumSize = (std::numeric_limits<std::size_t>::max)();
+    const auto maximumUnsigned = (std::numeric_limits<std::uint64_t>::max)();
+
+    bool rejectedMatrixOverflow = false;
+    try { (void)Arithvex::AdvancedComputation::Matrix(maximumSize, 2U); }
+    catch (const std::overflow_error&) { rejectedMatrixOverflow = true; }
+    require(rejectedMatrixOverflow, "matrix allocation must reject size_t dimension overflow");
+
+    bool rejectedHugeOde = false;
+    try {
+        (void)Arithvex::AdvancedComputation::ODESolver::euler(
+            [](long double, const std::vector<long double>& y) { return y; },
+            0.0L, { 1.0L }, 1.0L, maximumSize);
+    }
+    catch (const std::overflow_error&) { rejectedHugeOde = true; }
+    require(rejectedHugeOde, "ODE trajectory length must reject size_t overflow");
+
+    const auto impossibleCombination = Arithvex::AlgebraStats::combinations(maximumUnsigned, maximumUnsigned / 2U);
+    require(impossibleCombination.overflowed && impossibleCombination.value == 0U,
+        "giant nCr must report overflow without allocating enormous vectors");
+    const auto ordinaryCombination = Arithvex::AlgebraStats::combinations(8U, 4U);
+    require(!ordinaryCombination.overflowed && ordinaryCombination.value == 70U,
+        "nCr overflow guard must preserve ordinary results");
+
+    using namespace Arithvex::Geometry3D;
+    const auto nan = (std::numeric_limits<long double>::quiet_NaN)();
+    const auto inf = (std::numeric_limits<long double>::infinity)();
+    bool rejectedNaNRadius = false;
+    try { (void)Circle({ 0.0L, 0.0L }, nan); }
+    catch (const std::invalid_argument&) { rejectedNaNRadius = true; }
+    require(rejectedNaNRadius, "circle must reject NaN radius");
+
+    bool rejectedInfiniteRadius = false;
+    try { (void)Sphere({ 0.0L, 0.0L, 0.0L }, inf); }
+    catch (const std::invalid_argument&) { rejectedInfiniteRadius = true; }
+    require(rejectedInfiniteRadius, "sphere must reject infinite radius");
+
+    bool rejectedNonFiniteLine = false;
+    try { (void)StraightLine(inf, 1.0L, 0.0L); }
+    catch (const std::invalid_argument&) { rejectedNonFiniteLine = true; }
+    require(rejectedNonFiniteLine, "line must reject non-finite coefficients");
+
+    bool rejectedNonFiniteNormal = false;
+    try { (void)Arithvex::normalize({ 1.0L, nan, 1.0L }); }
+    catch (const std::invalid_argument&) { rejectedNonFiniteNormal = true; }
+    require(rejectedNonFiniteNormal, "vector normalization must reject NaN");
+}
+
 void testExports()
 {
     MathEngineFunctionSpec polynomial {};
@@ -275,6 +325,7 @@ int main()
         testAdvancedMath();
         testGeometryInvariants();
         testNumericalCalculus();
+        testReleaseBoundaryGuards();
         testExports();
         std::cout << "Arithvex regression tests passed.\n";
         return 0;
