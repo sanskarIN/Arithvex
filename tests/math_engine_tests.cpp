@@ -135,12 +135,12 @@ int main()
         testCombinatorics();
         testProbabilities();
         testExports();
-        std::cout << "Arithvex regression tests passed.\\n";
+        std::cout << "Arithvex regression tests passed.\n";
         return 0;
     }
     catch (const std::exception& error)
     {
-        std::cerr << "Arithvex regression test failed: " << error.what() << '\\n';
+        std::cerr << "Arithvex regression test failed: " << error.what() << '\n';
         return 1;
     }
 }
