@@ -81,12 +81,17 @@ std::vector<long double> addScaled(const std::vector<long double>& lhs, const st
 } // namespace
 
 Matrix::Matrix(const std::size_t rows, const std::size_t columns, const long double initialValue)
-    : rows_(rows), columns_(columns), data_(rows * columns, initialValue)
+    : rows_(rows), columns_(columns)
 {
     if (rows == 0U || columns == 0U)
     {
         throw std::invalid_argument("Matrix dimensions must be strictly positive.");
     }
+    if (rows > (std::numeric_limits<std::size_t>::max)() / columns)
+    {
+        throw std::overflow_error("Matrix dimensions overflow the addressable element count.");
+    }
+    data_.assign(rows * columns, initialValue);
 }
 
 Matrix Matrix::identity(const std::size_t dimension)
@@ -282,6 +287,11 @@ std::vector<ODEPoint> ODESolver::euler(System system, long double t0, State init
         throw std::invalid_argument("Euler solver requires a non-zero step size.");
     }
 
+    if (steps == (std::numeric_limits<std::size_t>::max)())
+    {
+        throw std::overflow_error("ODE step count overflows trajectory length.");
+    }
+
     std::vector<ODEPoint> trajectory;
     trajectory.reserve(steps + 1U);
 
@@ -306,6 +316,11 @@ std::vector<ODEPoint> ODESolver::rungeKutta4(System system, long double t0, Stat
     if (stepSize == 0.0L)
     {
         throw std::invalid_argument("Runge-Kutta solver requires a non-zero step size.");
+    }
+
+    if (steps == (std::numeric_limits<std::size_t>::max)())
+    {
+        throw std::overflow_error("ODE step count overflows trajectory length.");
     }
 
     std::vector<ODEPoint> trajectory;
