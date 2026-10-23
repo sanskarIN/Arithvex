@@ -197,7 +197,6 @@ Released under the [MIT License](LICENSE). Copyright information and license ter
 - **Repository:** https://github.com/sanskarIN/Arithvex
 - **Project maintainer:** [Sanskar](https://github.com/sanskarIN)
 - **Website:** https://sanskarin.github.io
-- **Contact:** https://sanskarin.github.io/contact/#send-a-message
 - **Support development:** [Buy Me a Coffee](https://buymeacoffee.com/SanskarCodes) · [Razorpay](https://razorpay.me/@SanskarCodes) · [PayPal](https://paypal.me/SanskarCodes)
 
 **Previous README:** The original long-form README has been preserved verbatim at [docs/archive/README-original-2026-10-23.md](docs/archive/README-original-2026-10-23.md) for historical reference. It contains repetitive legacy material and is **not** authoritative documentation of current capabilities.
