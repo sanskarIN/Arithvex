@@ -8,9 +8,9 @@ namespace
 {
 void ensurePositive(const long double value, const std::string& name)
 {
-    if (value <= 0.0L)
+    if (!std::isfinite(value) || value <= 0.0L)
     {
-        throw std::invalid_argument(name + " must be strictly positive.");
+        throw std::invalid_argument(name + " must be finite and strictly positive.");
     }
 }
 
@@ -29,9 +29,10 @@ StraightLine::StraightLine(const long double a, const long double b, const long 
     : a_(a), b_(b), c_(c)
 {
     const auto length = std::hypotl(a_, b_);
-    if (length < kEpsilon)
+    if (!std::isfinite(a_) || !std::isfinite(b_) || !std::isfinite(c_)
+        || !std::isfinite(length) || length < kEpsilon)
     {
-        throw std::invalid_argument("A straight line requires at least one non-zero directional coefficient.");
+        throw std::invalid_argument("A straight line requires finite coefficients and a non-zero direction.");
     }
 
     // Normalizing makes the same geometric line compare and print consistently.
