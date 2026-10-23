@@ -14,7 +14,7 @@ Arithvex is a C++20 mathematics engine with a shared library and an interactive 
 cmake -S . -B build -DBUILD_TESTING=ON
 cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
-.\build\Release\MathEngineRunner.exe
+.\build\Release\ArithvexCLI.exe
 ```
 
 ## Linux
@@ -23,21 +23,23 @@ ctest --test-dir build -C Release --output-on-failure
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
 cmake --build build --parallel
 ctest --test-dir build --output-on-failure
-./build/MathEngineRunner
+./build/ArithvexCLI
 ```
 
-To build without tests, add `-DBUILD_TESTING=OFF` to the CMake configuration.
+To build without tests, add `-DBUILD_TESTING=OFF` to the CMake configuration. On Windows, `scripts/build-windows.cmd` builds and tests, and `scripts/run-windows.cmd` launches the CLI.
+
+CMake provides source-compatibility target aliases (`MathEngineCore`, `MathEngine`, and `MathEngineRunner`), but generated executables and shared libraries are now branded **Arithvex**. Existing C ABI symbols retain their historical names. The Visual Studio solution is `Arithvex.slnx`.
 
 ## Targets
 
 | Target | Purpose |
 | --- | --- |
-| `MathEngineCore` | Static C++ implementation used by the shared library and tests |
-| `MathEngine` | Shared library exposing the C-style ABI entry points |
-| `MathEngineRunner` | Interactive command-line client |
+| `ArithvexCore` | Static C++ implementation used by the shared library and tests |
+| `Arithvex` | Shared library exposing the existing C-style ABI entry points |
+| `ArithvexCLI` | Interactive command-line client |
 | `arithvex_tests` | Regression tests, built when `BUILD_TESTING=ON` |
 
-The public C ABI is declared in `The extra har level maths PHD Level++/MathEngineExports.h`. ABI functions that cannot produce a valid numerical result generally return NaN (or a zero result count), and text-producing functions signal failure with -1. Check individual API contracts before consuming results.
+The public C ABI is declared in `src/Arithvex/MathEngineExports.h`. ABI functions that cannot produce a valid numerical result generally return NaN (or a zero result count), and text-producing functions signal failure with -1. Check individual API contracts before consuming results.
 
 ## Development quality gates
 
@@ -51,6 +53,6 @@ GitHub Actions runs Debug and Release builds on both Ubuntu and Windows for pull
 
 ## Known cleanup tasks
 
-- The repository contains historical binaries and compiler intermediate files tracked by Git. .gitignore prevents newly untracked instances but does not untrack historical files; remove those in a dedicated, reviewed cleanup change.
+- Historical generated binaries and compiler intermediates have been removed from the active source tree. They remain available in old Git history; no history rewrite was performed.
 - The original oversized README is preserved in `docs/archive/README-original-2026-10-23.md`; the root README now serves as the maintained project overview.
 - Verify all existing mathematical algorithms with expanded numerical reference tests before declaring a stable release.
