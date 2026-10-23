@@ -175,7 +175,7 @@ MathEngine::SymbolicCalculus::Expression buildExpression(const MathEngineFunctio
             [amplitude, rate, phase, vertical](const VariableMap& variables)
             {
                 const auto x = static_cast<long double>(variables.at("x"));
-                return amplitude * std::expl(rate * x + phase) + vertical;
+                return amplitude * std::exp(rate * x + phase) + vertical;
             });
     }
     case MathFunctionLogarithm:
