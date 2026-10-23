@@ -91,6 +91,34 @@ jobs:
           cd dist
           cmake -E sha256sum ./*.zip > SHA256SUMS.txt
 
+      - name: Verify release-candidate contents and checksums
+        if: matrix.build_type == 'Release'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum -c SHA256SUMS.txt
+          shopt -s nullglob
+          archives=(*.zip)
+          if (( ${#archives[@]} == 0 )); then
+            echo "No release candidate archives to verify" >&2
+            exit 1
+          fi
+          for archive in "${archives[@]}"; do
+            listing="$(cmake -E tar tf "$archive")"
+            for expected in MathEngineExports.h ArithvexConfig.cmake LICENSE ArithvexCLI; do
+              if ! grep -Fq "$expected" <<< "$listing"; then
+                echo "Missing $expected from $archive" >&2
+                exit 1
+              fi
+            done
+            if [[ "$RUNNER_OS" == "Windows" ]]; then
+              grep -Fq Arithvex.dll <<< "$listing"
+            else
+              grep -Fq libArithvex.so <<< "$listing"
+            fi
+          done
+
       - name: Upload release-candidate archive
         if: matrix.build_type == 'Release'
         uses: actions/upload-artifact@v4
@@ -100,3 +128,22 @@ jobs:
             dist/*.zip
             dist/SHA256SUMS.txt
           if-no-files-found: error
+
+  sanitizer-test:
+    name: ubuntu-latest / ASan + UBSan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Configure sanitizers
+        run: cmake -S . -B build-sanitized -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DARITHVEX_ENABLE_SANITIZERS=ON
+
+      - name: Build sanitized math engine
+        run: cmake --build build-sanitized --parallel
+
+      - name: Test memory and undefined behavior
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: ctest --test-dir build-sanitized --output-on-failure
