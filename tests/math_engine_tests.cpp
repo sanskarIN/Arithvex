@@ -101,6 +101,20 @@ void testProbabilities()
     try { (void)Probability::joint(std::numeric_limits<long double>::quiet_NaN(), 0.5L); }
     catch (const std::out_of_range&) { invalidNaN = true; }
     require(invalidNaN, "NaN is not a valid probability");
+
+    const auto partition = Probability::totalProbability({ 0.4L, 0.6L }, { 0.3L, 0.8L });
+    require(std::abs(partition - 0.6L) < 1.0e-12L,
+        "total probability of normalized partition must be 0.6");
+
+    bool rejectedUnderfullPartition = false;
+    try { (void)Probability::totalProbability({ 0.2L, 0.2L }, { 0.5L, 0.5L }); }
+    catch (const std::out_of_range&) { rejectedUnderfullPartition = true; }
+    require(rejectedUnderfullPartition, "prior probabilities must cover a complete partition");
+
+    bool rejectedOverfullPartition = false;
+    try { (void)Probability::totalProbability({ 0.7L, 0.8L }, { 0.5L, 0.5L }); }
+    catch (const std::out_of_range&) { rejectedOverfullPartition = true; }
+    require(rejectedOverfullPartition, "prior probabilities cannot exceed one as a partition");
 }
 
 void testAdvancedMath()
