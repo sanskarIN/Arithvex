@@ -13,6 +13,7 @@ Arithvex is an **open-source C++20 mathematical computation engine** featuring a
 
 ## Contents
 
+- [Documentation](#documentation)
 - [What it can do](#what-it-can-do)
 - [Get started](#get-started)
 - [Use the library](#use-the-library)
@@ -21,6 +22,18 @@ Arithvex is an **open-source C++20 mathematical computation engine** featuring a
 - [First stable release preparation](#first-stable-release-preparation)
 - [Contributing](#contributing)
 - [License and links](#license-and-links)
+
+## Documentation
+
+The [documentation hub](docs/README.md) has focused guides for different workflows:
+
+- [Quick start](docs/QUICKSTART.md) — clone, build, run the CLI and use the installed SDK
+- [API guide](docs/API.md) — public C++ modules, exported functions, examples and error conventions
+- [Architecture](docs/ARCHITECTURE.md) — libraries, CMake targets and compatibility aliases
+- [Numerical behavior](docs/NUMERICAL_BEHAVIOR.md) — tolerances, edge cases and accuracy limitations
+- [Build and test](docs/BUILDING.md) — platform-specific CMake and CTest commands
+- [Troubleshooting](docs/TROUBLESHOOTING.md) — compiler, runtime, package and CMake issues
+- [Contributing](docs/CONTRIBUTING.md) — tests, PR checklist and documentation changes
 
 ## What it can do
 
@@ -172,7 +185,7 @@ The initial regression tests cover:
 
 Passing these tests **does not guarantee** every mathematical function is validated. Areas requiring continued work include deeper FFT/inverse FFT, matrix, eigenvalue, geometry, calculus, boundary-condition, and numerical-precision testing.
 
-See the [open issues](https://github.com/sanskarIN/Arithvex/issues) for current tasks. Priorities include [expanding numerical tests](https://github.com/sanskarIN/Arithvex/issues/4) and [protecting the `main` branch](https://github.com/sanskarIN/Arithvex/issues/5). Historical build artifacts have been removed from the current tree without rewriting history.
+See the [open issues](https://github.com/sanskarIN/Arithvex/issues) for current tasks. Ongoing priorities include [numerical reference testing](https://github.com/sanskarIN/Arithvex/issues/4) and [release-readiness verification](https://github.com/sanskarIN/Arithvex/issues/9). Historical build artifacts have been removed from the current tree without rewriting history.
 
 ## First stable release preparation
 
