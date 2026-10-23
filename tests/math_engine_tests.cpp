@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "AdvancedComputation.h"
+#include "Arithvex.h"
 #include "AlgebraStats.h"
 #include "MathEngineExports.h"
 
@@ -105,7 +105,7 @@ void testProbabilities()
 
 void testAdvancedMath()
 {
-    using namespace MathEngine::AdvancedComputation;
+    using namespace Arithvex::AdvancedComputation;
 
     const std::vector<std::complex<long double>> impulse {
         { 1.0L, 0.0L }, { 0.0L, 0.0L }, { 0.0L, 0.0L }, { 0.0L, 0.0L }
