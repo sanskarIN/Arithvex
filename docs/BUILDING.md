@@ -2,6 +2,8 @@
 
 Arithvex is a C++20 mathematics engine with a shared library and an interactive console runner. The root CMake configuration builds on Windows and Linux. The legacy Visual Studio solution remains available for Windows developers.
 
+For an end-to-end clone-to-calculation walkthrough, start with [Quick start](QUICKSTART.md). For installed library consumers, see [API guide](API.md) and [Troubleshooting](TROUBLESHOOTING.md).
+
 ## Prerequisites
 
 - CMake 3.20 or newer
@@ -56,3 +58,10 @@ GitHub Actions runs Debug and Release builds on both Ubuntu and Windows for pull
 - Historical generated binaries and compiler intermediates have been removed from the active source tree. They remain available in old Git history; no history rewrite was performed.
 - Use the maintained root `README.md` and this build guide rather than historical project snapshots.
 - Verify all existing mathematical algorithms with expanded numerical reference tests before declaring a stable release.
+
+## Further reading
+
+- [Documentation index](README.md) — all maintained guides
+- [Architecture](ARCHITECTURE.md) — CMake target graph and installed exports
+- [Numerical behavior](NUMERICAL_BEHAVIOR.md) — reference tests and error tolerances
+- [Contributing](CONTRIBUTING.md) — development workflow and review checklist
