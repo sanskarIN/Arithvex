@@ -42,9 +42,9 @@ long double norm(const Vector3& value) noexcept
 Vector3 normalize(const Vector3& value)
 {
     const auto magnitude = norm(value);
-    if (magnitude < kEpsilon)
+    if (!std::isfinite(magnitude) || magnitude < kEpsilon)
     {
-        throw std::invalid_argument("Cannot normalize the zero vector.");
+        throw std::invalid_argument("Cannot normalize a zero or non-finite vector.");
     }
 
     return { value.x / magnitude, value.y / magnitude, value.z / magnitude };
