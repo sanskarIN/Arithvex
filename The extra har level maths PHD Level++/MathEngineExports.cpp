@@ -53,6 +53,12 @@ MathEngine::SymbolicCalculus::LimitDirection toLimitDirection(const int directio
 
 MathEngine::SymbolicCalculus::Expression buildExpression(const MathEngineFunctionSpec& spec)
 {
+    // Caller-controlled counts must never index past the fixed-size ABI buffer.
+    if (spec.parameterCount > MATHENGINE_MAX_FUNCTION_PARAMETERS)
+    {
+        throw std::invalid_argument("Function parameter count exceeds the ABI capacity.");
+    }
+
     using MathEngine::SymbolicCalculus::Expression;
     using MathEngine::SymbolicCalculus::VariableMap;
 
@@ -169,7 +175,7 @@ MathEngine::SymbolicCalculus::Expression buildExpression(const MathEngineFunctio
             [amplitude, rate, phase, vertical](const VariableMap& variables)
             {
                 const auto x = static_cast<long double>(variables.at("x"));
-                return amplitude * std::expl(rate * x + phase) + vertical;
+                return amplitude * std::exp(rate * x + phase) + vertical;
             });
     }
     case MathFunctionLogarithm:

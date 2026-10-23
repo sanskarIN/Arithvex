@@ -8,9 +8,16 @@ namespace
 {
 std::complex<long double> complexCubeRoot(const std::complex<long double>& value)
 {
-    if (std::abs(value) < kEpsilon)
+    if (value == std::complex<long double> { 0.0L, 0.0L })
     {
         return { 0.0L, 0.0L };
+    }
+
+    // The principal complex cube root is not the real cube root of a negative number.
+    // Keep real coefficients on the real branch when Cardano's discriminant is positive.
+    if (value.imag() == 0.0L)
+    {
+        return { std::cbrt(value.real()), 0.0L };
     }
 
     return std::pow(value, 1.0L / 3.0L);
@@ -23,7 +30,7 @@ std::complex<long double> sanitizeComplex(const std::complex<long double>& value
 
 void validateProbability(const long double probability, const std::string& name)
 {
-    if (probability < -kEpsilon || probability > 1.0L + kEpsilon)
+    if (!std::isfinite(probability) || probability < -kEpsilon || probability > 1.0L + kEpsilon)
     {
         throw std::out_of_range(name + " must lie in [0, 1].");
     }
@@ -52,13 +59,17 @@ RootSet solveQuadratic(const long double a, const long double b, const long doub
 
     // Using q avoids catastrophic cancellation when b and sqrt(discriminant) have similar magnitude.
     const auto q = -0.5L * (b + (b >= 0.0L ? 1.0L : -1.0L) * sqrtDiscriminant);
-    auto first = q / a;
-    auto second = c / q;
-
+    std::complex<long double> first;
+    std::complex<long double> second;
     if (std::abs(q) < kEpsilon)
     {
         first = (-b + sqrtDiscriminant) / (2.0L * a);
         second = (-b - sqrtDiscriminant) / (2.0L * a);
+    }
+    else
+    {
+        first = q / a;
+        second = c / q;
     }
 
     return { { sanitizeComplex(first), sanitizeComplex(second) } };
@@ -85,7 +96,11 @@ RootSet solveCubic(const long double a, const long double b, const long double c
     const std::complex<long double> delta = square(q / 2.0L) + cube(p / 3.0L);
     const auto sqrtDelta = std::sqrt(delta);
     const auto u = complexCubeRoot(-q / 2.0L + sqrtDelta);
-    const auto v = complexCubeRoot(-q / 2.0L - sqrtDelta);
+    // Cardano requires u*v = -p/3: independently choosing principal roots
+    // can yield a different cube-root branch and incorrect solutions.
+    const auto v = std::abs(u) > kEpsilon
+        ? std::complex<long double> { -p / (3.0L * u) }
+        : complexCubeRoot(-q / 2.0L - sqrtDelta);
 
     const std::complex<long double> omega1(-0.5L, std::sqrt(3.0L) / 2.0L);
     const std::complex<long double> omega2(-0.5L, -std::sqrt(3.0L) / 2.0L);
@@ -168,9 +183,9 @@ CheckedUnsigned64 combinations(const std::uint64_t n, const std::uint64_t r)
 
     std::vector<std::uint64_t> numerator;
     numerator.reserve(static_cast<std::size_t>(k));
-    for (std::uint64_t value = n - k + 1U; value <= n; ++value)
+    for (std::uint64_t index = 0U; index < k; ++index)
     {
-        numerator.push_back(value);
+        numerator.push_back(n - k + 1U + index);
     }
 
     // Cancelling common factors before multiplication keeps exactness while minimizing overflow risk.
@@ -218,6 +233,11 @@ long double Probability::conditional(const long double intersectionAB, const lon
         throw std::domain_error("Conditional probability is undefined when the conditioning event has zero probability.");
     }
 
+    if (intersectionAB > probabilityB + kEpsilon)
+    {
+        throw std::out_of_range("P(A intersect B) cannot exceed P(B).");
+    }
+
     return intersectionAB / probabilityB;
 }
 
@@ -232,7 +252,13 @@ long double Probability::bayes(const long double probabilityBGivenA, const long 
         throw std::domain_error("Bayes' theorem is undefined when P(B) is zero.");
     }
 
-    return (probabilityBGivenA * probabilityA) / probabilityB;
+    const auto intersection = probabilityBGivenA * probabilityA;
+    if (intersection > probabilityB + kEpsilon)
+    {
+        throw std::out_of_range("Inconsistent Bayes inputs imply a probability above one.");
+    }
+
+    return intersection / probabilityB;
 }
 
 long double Probability::joint(const long double probabilityBGivenA, const long double probabilityA)

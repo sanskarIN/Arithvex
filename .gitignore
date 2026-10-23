@@ -427,3 +427,20 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# CMake out-of-tree build products
+[Bb]uild/
+CMakeFiles/
+CMakeCache.txt
+CTestTestfile.cmake
+compile_commands.json
+Testing/
+
+# Additional generated native binaries and intermediates
+*.exe
+*.dll
+*.exp
+*.lib
+*.a
+*.so
+*.dylib

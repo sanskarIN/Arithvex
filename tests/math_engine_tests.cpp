@@ -1,0 +1,146 @@
+#include <algorithm>
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <iostream>
+#include <limits>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include "AlgebraStats.h"
+#include "MathEngineExports.h"
+
+namespace
+{
+void require(bool condition, const std::string& message)
+{
+    if (!condition)
+    {
+        throw std::runtime_error(message);
+    }
+}
+
+bool near(double lhs, double rhs, double tolerance = 1.0e-9)
+{
+    return std::abs(lhs - rhs) <= tolerance;
+}
+
+void testQuadratic()
+{
+    const auto result = SolveQuadraticExport(1.0, -3.0, 2.0);
+    require(result.count == 2, "quadratic must return two roots");
+    std::vector<double> roots { result.roots[0].real, result.roots[1].real };
+    std::sort(roots.begin(), roots.end());
+    require(near(roots[0], 1.0) && near(roots[1], 2.0), "incorrect real quadratic roots");
+
+    const auto imaginary = SolveQuadraticExport(1.0, 0.0, 1.0);
+    require(imaginary.count == 2, "complex quadratic must return two roots");
+    require(near(std::abs(imaginary.roots[0].imaginary), 1.0), "incorrect complex quadratic root");
+    require(near(std::abs(imaginary.roots[1].imaginary), 1.0), "incorrect complex quadratic root");
+
+    const auto repeated = SolveQuadraticExport(1.0, 0.0, 0.0);
+    require(repeated.count == 2 && near(repeated.roots[0].real, 0.0)
+        && near(repeated.roots[1].real, 0.0), "repeated quadratic root failed");
+}
+
+void checkCubic(double a, double b, double c, double d)
+{
+    const auto result = SolveCubicExport(a, b, c, d);
+    require(result.count == 3, "cubic must return three roots");
+
+    for (std::size_t i = 0; i < result.count; ++i)
+    {
+        const std::complex<double> root { result.roots[i].real, result.roots[i].imaginary };
+        const auto residual = ((a * root + b) * root + c) * root + d;
+        require(std::isfinite(root.real()) && std::isfinite(root.imag())
+            && std::abs(residual) < 1.0e-8, "cubic root fails polynomial residual");
+    }
+}
+
+void testCubic()
+{
+    checkCubic(1.0, 0.0, 1.0, 1.0);   // One real root and complex conjugates
+    checkCubic(1.0, -6.0, 11.0, -6.0); // Three distinct real roots
+    checkCubic(1.0, 0.0, 0.0, 0.0);   // Triple root at zero
+    checkCubic(1.0, 0.0, -3.0, 2.0);  // Repeated non-zero roots
+}
+
+void testCombinatorics()
+{
+    using MathEngine::AlgebraStats::combinations;
+    const auto maximum = (std::numeric_limits<std::uint64_t>::max)();
+    const auto edge = combinations(maximum, 1);
+    require(!edge.overflowed && edge.value == maximum, "nCr(max_uint64, 1) must not wrap");
+    const auto small = combinations(10, 3);
+    require(!small.overflowed && small.value == 120, "10 choose 3 must equal 120");
+    const auto overflow = combinations(100, 50);
+    require(overflow.overflowed, "100 choose 50 must report uint64 overflow");
+}
+
+void testProbabilities()
+{
+    using MathEngine::AlgebraStats::Probability;
+    require(near(static_cast<double>(Probability::conditional(0.2L, 0.4L)), 0.5),
+        "conditional probability mismatch");
+    require(near(static_cast<double>(Probability::bayes(0.75L, 0.4L, 0.5L)), 0.6),
+        "Bayes probability mismatch");
+
+    bool invalidIntersection = false;
+    try { (void)Probability::conditional(0.6L, 0.3L); }
+    catch (const std::out_of_range&) { invalidIntersection = true; }
+    require(invalidIntersection, "intersection cannot exceed conditioning event");
+
+    bool invalidBayes = false;
+    try { (void)Probability::bayes(1.0L, 1.0L, 0.1L); }
+    catch (const std::out_of_range&) { invalidBayes = true; }
+    require(invalidBayes, "inconsistent Bayes inputs must be rejected");
+
+    bool invalidNaN = false;
+    try { (void)Probability::joint(std::numeric_limits<long double>::quiet_NaN(), 0.5L); }
+    catch (const std::out_of_range&) { invalidNaN = true; }
+    require(invalidNaN, "NaN is not a valid probability");
+}
+
+void testExports()
+{
+    MathEngineFunctionSpec polynomial {};
+    polynomial.kind = MathFunctionPolynomial;
+    polynomial.parameterCount = 3;
+    polynomial.parameters[0] = 1.0;
+    polynomial.parameters[1] = 2.0;
+    polynomial.parameters[2] = 3.0;
+    require(near(EvaluateFunctionExport(&polynomial, 2.0), 17.0),
+        "polynomial ABI evaluation mismatch");
+
+    polynomial.parameterCount = MATHENGINE_MAX_FUNCTION_PARAMETERS + 1;
+    require(std::isnan(EvaluateFunctionExport(&polynomial, 2.0)),
+        "oversized parameter count must be rejected");
+    require(DescribeFunctionExport(&polynomial, nullptr, 0) == -1,
+        "invalid function description must be rejected");
+
+    const double values[] { 1.0, 2.0, 3.0, 4.0 };
+    require(near(MeanExport(values, 4), 2.5), "mean ABI mismatch");
+    require(near(MedianExport(values, 4), 2.5), "median ABI mismatch");
+    require(std::isnan(MeanExport(nullptr, 4)), "null values must yield NaN");
+}
+} // namespace
+
+int main()
+{
+    try
+    {
+        testQuadratic();
+        testCubic();
+        testCombinatorics();
+        testProbabilities();
+        testExports();
+        std::cout << "Arithvex regression tests passed.\n";
+        return 0;
+    }
+    catch (const std::exception& error)
+    {
+        std::cerr << "Arithvex regression test failed: " << error.what() << '\n';
+        return 1;
+    }
+}

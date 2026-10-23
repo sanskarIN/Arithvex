@@ -2,10 +2,17 @@
 
 #include <cstddef>
 
-#ifdef THEEXTRAHARLEVELMATHSPHDLEVEL_EXPORTS
-#define MATHENGINE_API __declspec(dllexport)
+#if defined(_WIN32)
+#  if defined(THEEXTRAHARLEVELMATHSPHDLEVEL_EXPORTS)
+#    define MATHENGINE_API __declspec(dllexport)
+#  else
+#    define MATHENGINE_API __declspec(dllimport)
+#  endif
 #else
-#define MATHENGINE_API __declspec(dllimport)
+#  define MATHENGINE_API
+#  ifndef __cdecl
+#    define __cdecl
+#  endif
 #endif
 
 #define MATHENGINE_MAX_FUNCTION_PARAMETERS 16
