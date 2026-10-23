@@ -34,3 +34,37 @@ jobs:
 
       - name: Run regression tests
         run: ctest --test-dir build -C ${{ matrix.build_type }} --output-on-failure
+
+      - name: Install release-candidate SDK
+        if: matrix.build_type == 'Release'
+        run: cmake --install build --config Release --prefix install
+
+      - name: Smoke-test installed Arithvex CLI
+        if: matrix.build_type == 'Release'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            cli="./install/bin/ArithvexCLI.exe"
+          else
+            cli="./install/bin/ArithvexCLI"
+          fi
+          printf '0\n' | "$cli"
+
+      - name: Build installed SDK consumer
+        if: matrix.build_type == 'Release'
+        run: |
+          cmake -S tests/consumer -B consumer-build -DCMAKE_PREFIX_PATH=${{ github.workspace }}/install
+          cmake --build consumer-build --config Release --parallel
+
+      - name: Package release-candidate ZIP
+        if: matrix.build_type == 'Release'
+        run: cpack --config build/CPackConfig.cmake -C Release -G ZIP --package-directory dist
+
+      - name: Upload release-candidate archive
+        if: matrix.build_type == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arithvex-v1.0.0-rc.1-${{ runner.os }}
+          path: dist/*.zip
+          if-no-files-found: error
