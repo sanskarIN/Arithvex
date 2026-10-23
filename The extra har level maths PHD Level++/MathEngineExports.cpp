@@ -53,6 +53,12 @@ MathEngine::SymbolicCalculus::LimitDirection toLimitDirection(const int directio
 
 MathEngine::SymbolicCalculus::Expression buildExpression(const MathEngineFunctionSpec& spec)
 {
+    // Caller-controlled counts must never index past the fixed-size ABI buffer.
+    if (spec.parameterCount > MATHENGINE_MAX_FUNCTION_PARAMETERS)
+    {
+        throw std::invalid_argument("Function parameter count exceeds the ABI capacity.");
+    }
+
     using MathEngine::SymbolicCalculus::Expression;
     using MathEngine::SymbolicCalculus::VariableMap;
 
