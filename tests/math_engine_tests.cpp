@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "AdvancedComputation.h"
 #include "AlgebraStats.h"
 #include "MathEngineExports.h"
 
@@ -102,6 +103,57 @@ void testProbabilities()
     require(invalidNaN, "NaN is not a valid probability");
 }
 
+void testAdvancedMath()
+{
+    using namespace MathEngine::AdvancedComputation;
+
+    const std::vector<std::complex<long double>> impulse {
+        { 1.0L, 0.0L }, { 0.0L, 0.0L }, { 0.0L, 0.0L }, { 0.0L, 0.0L }
+    };
+    const auto spectrum = fft(impulse);
+    require(spectrum.size() == impulse.size(), "FFT must preserve power-of-two length");
+    for (const auto value : spectrum)
+    {
+        require(std::abs(value - std::complex<long double> { 1.0L, 0.0L }) < 1.0e-12L,
+            "FFT impulse response must be constant");
+    }
+    const auto restored = ifft(spectrum);
+    for (std::size_t i = 0; i < restored.size(); ++i)
+    {
+        require(std::abs(restored[i] - impulse[i]) < 1.0e-12L,
+            "inverse FFT must restore original values");
+    }
+
+    const auto padded = fft({ { 1.0L, 0.0L }, { 2.0L, 0.0L }, { 3.0L, 0.0L } });
+    require(padded.size() == 4, "non-power-of-two FFT should zero-pad to 4");
+    const auto paddedRestore = ifft(padded);
+    require(std::abs(paddedRestore[0] - std::complex<long double> { 1.0L, 0.0L }) < 1.0e-12L
+        && std::abs(paddedRestore[2] - std::complex<long double> { 3.0L, 0.0L }) < 1.0e-12L
+        && std::abs(paddedRestore[3]) < 1.0e-12L, "zero-padded FFT round trip mismatch");
+
+    auto identity = Matrix::identity(2);
+    require(identity(0, 0) == 1.0L && identity(1, 1) == 1.0L && identity(0, 1) == 0.0L,
+        "matrix identity must have unit diagonal");
+    bool rejectedIndex = false;
+    try { (void)identity(2, 0); }
+    catch (const std::out_of_range&) { rejectedIndex = true; }
+    require(rejectedIndex, "matrix must reject out-of-range indices");
+
+    Matrix diagonal(2, 2);
+    diagonal(0, 0) = 4.0L;
+    diagonal(1, 1) = 2.0L;
+    const auto dominant = powerIteration(diagonal);
+    require(std::abs(dominant.eigenvalue - 4.0L) < 1.0e-6L,
+        "dominant eigenvalue of diagonal matrix must be 4");
+
+    const auto trajectory = ODESolver::rungeKutta4(
+        [](long double, const ODESolver::State& state) { return state; },
+        0.0L, { 1.0L }, 0.1L, 10U);
+    require(trajectory.size() == 11U
+        && std::abs(trajectory.back().state[0] - std::exp(1.0L)) < 3.0e-6L,
+        "RK4 approximation for y'=y must approach e");
+}
+
 void testExports()
 {
     MathEngineFunctionSpec polynomial {};
@@ -134,6 +186,7 @@ int main()
         testCubic();
         testCombinatorics();
         testProbabilities();
+        testAdvancedMath();
         testExports();
         std::cout << "Arithvex regression tests passed.\n";
         return 0;
