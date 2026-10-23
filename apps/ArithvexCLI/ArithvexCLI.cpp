@@ -11,7 +11,7 @@ namespace
 {
 void printMenu()
 {
-    std::cout << "\nArithvex — Mathematical Computing CLI\n";
+    std::cout << "\nArithvex | Mathematical Computing CLI\n";
     std::cout << "1. Solve quadratic equation\n";
     std::cout << "2. Solve cubic equation\n";
     std::cout << "3. Compute mean and median\n";
