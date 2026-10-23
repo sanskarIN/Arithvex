@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(Arithvex VERSION 0.1.0 LANGUAGES CXX)
+project(Arithvex VERSION 1.0.0 LANGUAGES CXX)
+
+# Release-candidate stage only: v1.0.0 is NOT tagged or published as stable.
+set(ARITHVEX_PRERELEASE "rc.1")
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 include(CTest)
 
 set(ARITHVEX_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/Arithvex")
@@ -16,11 +21,17 @@ add_library(ArithvexCore STATIC
 )
 set_target_properties(ArithvexCore PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_features(ArithvexCore PUBLIC cxx_std_20)
-target_include_directories(ArithvexCore PUBLIC "${ARITHVEX_SOURCE_DIR}")
+target_include_directories(ArithvexCore PUBLIC
+    "$<BUILD_INTERFACE:${ARITHVEX_SOURCE_DIR}>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
 
 add_library(Arithvex SHARED "${ARITHVEX_SOURCE_DIR}/MathEngineExports.cpp")
 target_link_libraries(Arithvex PRIVATE ArithvexCore)
-target_include_directories(Arithvex PUBLIC "${ARITHVEX_SOURCE_DIR}")
+target_include_directories(Arithvex PUBLIC
+    "$<BUILD_INTERFACE:${ARITHVEX_SOURCE_DIR}>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
 target_compile_features(Arithvex PUBLIC cxx_std_20)
 target_compile_definitions(Arithvex PRIVATE ARITHVEX_EXPORTS)
 
@@ -46,3 +57,54 @@ else()
     target_compile_options(ArithvexCore PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(Arithvex PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+# CLI and shared-library runtime locations are platform-aware.
+# On Windows, DLL and CLI both install to bin. On Linux, set a relocatable RPATH.
+if(UNIX AND NOT APPLE)
+    set_target_properties(ArithvexCLI PROPERTIES INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+endif()
+
+install(TARGETS ArithvexCore Arithvex ArithvexCLI
+    EXPORT ArithvexTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(DIRECTORY "${ARITHVEX_SOURCE_DIR}/"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILES_MATCHING PATTERN "*.h"
+)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/Arithvex")
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArithvexConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/ArithvexConfig.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Arithvex"
+)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/ArithvexConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+install(EXPORT ArithvexTargets
+    FILE ArithvexTargets.cmake NAMESPACE Arithvex::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Arithvex"
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/ArithvexConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/ArithvexConfigVersion.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Arithvex"
+)
+
+# Archive names explicitly mark this as a release CANDIDATE.
+set(CPACK_PACKAGE_NAME "Arithvex")
+set(CPACK_PACKAGE_VENDOR "Arithvex Contributors")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}-${ARITHVEX_PRERELEASE}")
+set(CPACK_PACKAGE_FILE_NAME
+    "Arithvex-${PROJECT_VERSION}-${ARITHVEX_PRERELEASE}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_GENERATOR "ZIP;TGZ")
+include(CPack)
