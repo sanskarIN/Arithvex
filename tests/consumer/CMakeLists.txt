@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.20)
+project(ArithvexConsumer LANGUAGES CXX)
+find_package(Arithvex 1.0 CONFIG REQUIRED)
+add_executable(arithvex_consumer main.cpp)
+target_compile_features(arithvex_consumer PRIVATE cxx_std_20)
+target_link_libraries(arithvex_consumer PRIVATE Arithvex::Arithvex)
