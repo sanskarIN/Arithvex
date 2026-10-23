@@ -86,6 +86,8 @@ For troubleshooting, Debug builds, and detailed build instructions, see **[Build
 
 The shared-library C ABI is declared in [`MathEngineExports.h`](src/Arithvex/MathEngineExports.h). The historical `MathEngine`-prefixed **C ABI function and structure names** remain unchanged for existing clients; new binaries and CMake targets use **Arithvex**.
 
+For C++ callers, include [`Arithvex.h`](src/Arithvex/Arithvex.h) and use the `Arithvex::` namespace alias for the existing engine types (for example, `Arithvex::AdvancedComputation::Matrix`). The older `MathEngine::` namespace and includes remain available.
+
 Example of calling the exported quadratic solver from C++:
 
 ```cpp
