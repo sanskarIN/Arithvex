@@ -156,7 +156,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Arithvex\ArithvexCLI.cpp" />
+    <ClCompile Include="ArithvexCLI.cpp" />
     <ClInclude Include="..\..\src\Arithvex\MathEngineExports.h" />
   </ItemGroup>
   <ItemGroup>
