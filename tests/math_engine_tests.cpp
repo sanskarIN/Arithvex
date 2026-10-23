@@ -154,6 +154,92 @@ void testAdvancedMath()
         "RK4 approximation for y'=y must approach e");
 }
 
+void testGeometryInvariants()
+{
+    using namespace Arithvex::Geometry3D;
+
+    const Arithvex::Vector2 first { -1.0L, -1.0L };
+    const Arithvex::Vector2 second { 2.0L, 2.0L };
+    const auto line = StraightLine::fromPoints(first, second);
+    const auto evaluateLine = [&](const Arithvex::Vector2& point)
+    {
+        return line.a() * point.x + line.b() * point.y + line.c();
+    };
+    require(std::abs(evaluateLine(first)) < 1.0e-12L
+        && std::abs(evaluateLine(second)) < 1.0e-12L,
+        "line from two points must contain both points");
+
+    bool rejectedCoincidentPoints = false;
+    try { (void)StraightLine::fromPoints(first, first); }
+    catch (const std::invalid_argument&) { rejectedCoincidentPoints = true; }
+    require(rejectedCoincidentPoints, "coincident points must not define a line");
+
+    const Circle circle({ 1.0L, -2.0L }, 3.0L);
+    require(circle.center().x == 1.0L && circle.center().y == -2.0L
+        && circle.radius() == 3.0L, "circle must retain center and radius");
+
+    const Sphere sphere({ 1.0L, 2.0L, 3.0L }, 4.0L);
+    require(sphere.center().z == 3.0L && sphere.radius() == 4.0L,
+        "sphere must retain center and radius");
+
+    bool rejectedNegativeRadius = false;
+    try { (void)Sphere({ 0.0L, 0.0L, 0.0L }, -1.0L); }
+    catch (const std::invalid_argument&) { rejectedNegativeRadius = true; }
+    require(rejectedNegativeRadius, "sphere must reject negative radius");
+
+    const Ellipse ellipse({ 0.0L, 0.0L }, 5.0L, 3.0L);
+    require(std::abs(ellipse.focalDistance() - 4.0L) < 1.0e-12L,
+        "ellipse focal distance must satisfy c^2 = a^2 - b^2");
+    const auto foci = ellipse.foci();
+    require(std::abs(foci.first.x + 4.0L) < 1.0e-12L
+        && std::abs(foci.second.x - 4.0L) < 1.0e-12L,
+        "ellipse foci must lie along its major axis");
+
+    const Plane plane({ 1.0L, 2.0L, 3.0L }, { 0.0L, 0.0L, 2.0L });
+    require(std::abs(plane.normal().z - 1.0L) < 1.0e-12L
+        && std::abs(plane.d() + 3.0L) < 1.0e-12L,
+        "plane through a point must use normalized implicit coefficients");
+}
+
+void testNumericalCalculus()
+{
+    using namespace Arithvex::SymbolicCalculus;
+
+    const Expression square("x^2", [](const VariableMap& variables)
+    {
+        const auto x = variables.at("x");
+        return x * x;
+    });
+    const CalculusEngine engine;
+    require(std::abs(engine.derivative(square, "x", 3.0L) - 6.0L) < 1.0e-5L,
+        "derivative of x^2 at x=3 must be 6");
+    require(std::abs(engine.secondDerivative(square, "x", 3.0L) - 2.0L) < 1.0e-4L,
+        "second derivative of x^2 must be 2");
+
+    require(std::abs(engine.integrateDefinite(square, "x", 0.0L, 3.0L) - 9.0L) < 1.0e-5L,
+        "integral of x^2 from 0 to 3 must be 9");
+    require(std::abs(engine.integrateDefinite(square, "x", 3.0L, 0.0L) + 9.0L) < 1.0e-5L,
+        "reversed integration bounds must negate the integral");
+    require(engine.integrateDefinite(square, "x", 2.0L, 2.0L) == 0.0L,
+        "equal integration bounds must return zero");
+
+    const auto antiderivative = engine.integrateIndefinite(square, "x", 0.0L);
+    require(std::abs(antiderivative.evaluate({ { "x", 3.0L } }) - 9.0L) < 1.0e-5L,
+        "anchored antiderivative must reproduce the definite integral");
+
+    const Expression xy("x*y", [](const VariableMap& variables)
+    {
+        return variables.at("x") * variables.at("y");
+    });
+    require(std::abs(engine.partialDerivative(xy, "x", { { "x", 2.0L }, { "y", 3.0L } }) - 3.0L) < 1.0e-5L,
+        "partial derivative of x*y with respect to x must equal y");
+
+    bool missingVariable = false;
+    try { (void)engine.partialDerivative(xy, "x", { { "y", 3.0L } }); }
+    catch (const std::invalid_argument&) { missingVariable = true; }
+    require(missingVariable, "partial derivative must reject absent target variable");
+}
+
 void testExports()
 {
     MathEngineFunctionSpec polynomial {};
@@ -187,6 +273,8 @@ int main()
         testCombinatorics();
         testProbabilities();
         testAdvancedMath();
+        testGeometryInvariants();
+        testNumericalCalculus();
         testExports();
         std::cout << "Arithvex regression tests passed.\n";
         return 0;
