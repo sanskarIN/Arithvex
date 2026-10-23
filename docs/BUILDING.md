@@ -32,7 +32,8 @@ To build without tests, add `-DBUILD_TESTING=OFF` to the CMake configuration.
 
 | Target | Purpose |
 | --- | --- |
-| `MathEngine` | Shared library providing the C ABI and C++ implementation |
+| `MathEngineCore` | Static C++ implementation used by the shared library and tests |
+| `MathEngine` | Shared library exposing the C-style ABI entry points |
 | `MathEngineRunner` | Interactive command-line client |
 | `arithvex_tests` | Regression tests, built when `BUILD_TESTING=ON` |
 
@@ -51,5 +52,5 @@ GitHub Actions runs Debug and Release builds on both Ubuntu and Windows for pull
 ## Known cleanup tasks
 
 - The repository contains historical binaries and compiler intermediate files tracked by Git. .gitignore prevents newly untracked instances but does not untrack historical files; remove those in a dedicated, reviewed cleanup change.
-- The existing README is unusually large and should be reorganized into a short project overview plus topic-specific documentation.
+- The original oversized README is preserved in `docs/archive/README-original-2026-10-23.md`; the root README now serves as the maintained project overview.
 - Verify all existing mathematical algorithms with expanded numerical reference tests before declaring a stable release.
