@@ -173,6 +173,19 @@ CheckedUnsigned64 combinations(const std::uint64_t n, const std::uint64_t r)
     }
 
     const auto k = (std::min)(r, n - r);
+
+    // C(n, k) >= C(n, 2) for every 2 <= k <= n-2.
+    // Reject provably unrepresentable cases before allocating O(k) terms.
+    if (k >= 2U)
+    {
+        const auto first = (n % 2U == 0U) ? n / 2U : n;
+        const auto second = (n % 2U == 0U) ? n - 1U : (n - 1U) / 2U;
+        if (first > (std::numeric_limits<std::uint64_t>::max)() / second)
+        {
+            return { 0U, true };
+        }
+    }
+
     std::vector<std::uint64_t> denominator;
     denominator.reserve(static_cast<std::size_t>(k));
 
