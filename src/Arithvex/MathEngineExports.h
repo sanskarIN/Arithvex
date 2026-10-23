@@ -3,7 +3,7 @@
 #include <cstddef>
 
 #if defined(_WIN32)
-#  if defined(THEEXTRAHARLEVELMATHSPHDLEVEL_EXPORTS)
+#  if defined(ARITHVEX_EXPORTS) || defined(THEEXTRAHARLEVELMATHSPHDLEVEL_EXPORTS)
 #    define MATHENGINE_API __declspec(dllexport)
 #  else
 #    define MATHENGINE_API __declspec(dllimport)
@@ -15,6 +15,7 @@
 #  endif
 #endif
 
+// The MathEngine-prefixed ABI identifiers are retained for existing clients.
 #define MATHENGINE_MAX_FUNCTION_PARAMETERS 16
 
 extern "C"
