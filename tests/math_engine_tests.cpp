@@ -290,6 +290,42 @@ void testReleaseBoundaryGuards()
     require(rejectedNonFiniteNormal, "vector normalization must reject NaN");
 }
 
+void testSpectralAndConstants()
+{
+    using namespace Arithvex::AdvancedComputation;
+    require(fft({}).empty(), "FFT of an empty input must stay empty");
+    const auto singleton = ifft(fft({ { 2.0L, -3.0L } }));
+    require(singleton.size() == 1U && std::abs(singleton[0] - std::complex<long double> { 2.0L, -3.0L }) < 1.0e-12L,
+        "single-element FFT round trip must preserve complex values");
+
+    Matrix symmetric(2, 2);
+    symmetric(0, 0) = 2.0L;
+    symmetric(0, 1) = 1.0L;
+    symmetric(1, 0) = 1.0L;
+    symmetric(1, 1) = 2.0L;
+    const auto decomposition = jacobiEigenDecomposition(symmetric);
+    require(decomposition.eigenvalues.size() == 2U
+        && std::abs(decomposition.eigenvalues[0] - 3.0L) < 1.0e-9L
+        && std::abs(decomposition.eigenvalues[1] - 1.0L) < 1.0e-9L,
+        "Jacobi eigendecomposition must produce eigenvalues 3 and 1");
+    for (std::size_t i = 0U; i < 2U; ++i)
+    {
+        const auto x = decomposition.eigenvectors(0, i);
+        const auto y = decomposition.eigenvectors(1, i);
+        const auto lambda = decomposition.eigenvalues[i];
+        require(std::abs(2.0L * x + y - lambda * x) < 1.0e-9L
+            && std::abs(x + 2.0L * y - lambda * y) < 1.0e-9L,
+            "Jacobi eigenvectors must satisfy A*v = lambda*v");
+    }
+
+    const auto pi = std::acos(-1.0L);
+    require(std::abs(computePi(5U) - pi) < 1.0e-12L,
+        "Gauss-Legendre approximation must converge to pi");
+    const auto golden = (1.0L + std::sqrt(5.0L)) / 2.0L;
+    require(std::abs(computeGoldenRatio(50U) - golden) < 1.0e-12L,
+        "golden ratio continued fraction must converge");
+}
+
 void testExports()
 {
     MathEngineFunctionSpec polynomial {};
@@ -326,6 +362,7 @@ int main()
         testGeometryInvariants();
         testNumericalCalculus();
         testReleaseBoundaryGuards();
+        testSpectralAndConstants();
         testExports();
         std::cout << "Arithvex regression tests passed.\n";
         return 0;
