@@ -199,4 +199,4 @@ Released under the [MIT License](LICENSE). Copyright information and license ter
 - **Website:** https://sanskarin.github.io
 - **Support development:** [Buy Me a Coffee](https://buymeacoffee.com/SanskarCodes) · [Razorpay](https://razorpay.me/@SanskarCodes) · [PayPal](https://paypal.me/SanskarCodes)
 
-**Previous README:** The original long-form README has been preserved verbatim at [docs/archive/README-original-2026-10-23.md](docs/archive/README-original-2026-10-23.md) for historical reference. It contains repetitive legacy material and is **not** authoritative documentation of current capabilities.
+**Documentation:** The root README and [build guide](docs/BUILDING.md) are the maintained references for current features and supported workflows.
