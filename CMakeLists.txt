@@ -8,6 +8,16 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(CTest)
 
+# Opt-in Linux/GCC sanitizer instrumentation for a separate CI job.
+option(ARITHVEX_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer (Linux/GCC)" OFF)
+if(ARITHVEX_ENABLE_SANITIZERS)
+    if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        message(FATAL_ERROR "ARITHVEX_ENABLE_SANITIZERS currently requires Linux and GCC")
+    endif()
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address,undefined)
+endif()
+
 set(ARITHVEX_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/Arithvex")
 
 # The core stays separate so C++ tests can link it without exporting
